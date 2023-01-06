@@ -1,0 +1,12 @@
+[package]
+name = "rust-grpc-proxy"
+version = "0.1.0"
+edition = "2021"
+authors = ["wangdong <1443965173@qq.com>"]
+license = "MIT"
+description = "The grpc dynamic proxy is based on rust"
+
+[dependencies]
+wd_run = "0.2.2"
+wd_log = "0.1.5"
+tokio = {version = "1.23",features = ["full"]}
