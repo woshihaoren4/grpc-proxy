@@ -9,6 +9,7 @@ description = "The grpc dynamic proxy is based on rust"
 [dependencies]
 wd_run = "0.2.2"
 wd_log = "0.1.5"
+wd_sonyflake = "0.0.1"
 tokio = {version = "1.23",features = ["full"]}
 tokio-stream = "0.1"
 hyper = {version = "0.14.23",features = ["full"]}
