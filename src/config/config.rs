@@ -33,7 +33,13 @@ macro_rules! field_generate {
 field_generate!(Server;
     name,String,String::from("rust-grpc-proxy"),"Server::name";
     addr,String,String::from("0.0.0.0:670"),"Server::addr";
-    log_level,String,String::from("debug"),"Server::log_level"
+    control_pre,String,String::from("/grpc/proxy"),"Server::control_pre"
+);
+field_generate!(Log;
+    level,String,String::from("debug"),"Log::level";
+    show_time,bool,true,"Log::show_time";
+    show_file_line,bool,true,"Log::show_file_line";
+    out_file_path,String,String::new(),"Log::out_file_path"
 );
 
 // field_generate!(MongoDb;
@@ -60,6 +66,8 @@ field_generate!(Server;
 pub struct Config {
     #[serde(default = "Server::default")]
     pub server: Server,
+    #[serde(default = "Log::default")]
+    pub log: Log,
     // #[serde(default = "DataSource::default")]
     // pub data_source: DataSource,
     // #[serde(default = "Redis::default")]
