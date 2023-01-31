@@ -32,8 +32,8 @@ macro_rules! field_generate {
 
 field_generate!(Server;
     name,String,String::from("rust-grpc-proxy"),"Server::name";
-    addr,String,String::from("0.0.0.0:670"),"Server::addr";
-    control_pre,String,String::from("/grpc/proxy"),"Server::control_pre"
+    addr,String,String::from("0.0.0.0:666"),"Server::addr"
+    // control_pre,String,String::from("/grpc/proxy"),"Server::control_pre"
 );
 field_generate!(Log;
     level,String,String::from("debug"),"Log::level";

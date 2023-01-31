@@ -25,7 +25,7 @@ impl RunApplication {
     pub fn args() -> CmdInfo {
         CmdInfo::new("run", "run application").add(
             "c",
-            "./src/conf/config.toml",
+            "./src/config/config.toml",
             "config file path",
         )
     }
