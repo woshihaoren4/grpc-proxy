@@ -121,4 +121,13 @@ impl PathIndex for SimpleIndex {
         }
         None
     }
+
+    fn list(&self) -> Vec<(Method, String, String)> {
+        let mut list = vec![];
+        for i in self.nodes.iter(){
+            let node = (i.method.clone(),i.http_path.clone(),i.grpc_path.clone());
+            list.push(node);
+        }
+        list
+    }
 }

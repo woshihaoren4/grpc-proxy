@@ -1,12 +1,12 @@
 use std::ops::DerefMut;
 use std::sync::{Arc, RwLock};
-use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use crate::app::DynMap;
 use crate::infra::dynamic::DynClient;
 
 #[derive(Default)]
 pub struct MapList{
-    list:Vec<(String,Arc<DynClient>)>
+    list:Vec<(String,String,Arc<DynClient>)>
 }
 pub struct DynMapDefault{
     map:Vec<RwLock<MapList>>,
@@ -14,23 +14,31 @@ pub struct DynMapDefault{
 }
 
 impl MapList {
-    fn new(list:Vec<(String,Arc<DynClient>)>)->Self{
+    #[allow(dead_code)]
+    fn new(list:Vec<(String,String,Arc<DynClient>)>)->Self{
         Self{list}
     }
-    fn insert(list:&mut Vec<(String,Arc<DynClient>)>,path:String,dc:DynClient){
-        let i = list.len() - 1;
-        while i >= 0 {
-            if list[i].0.len() < path.len() {
-                list.insert(i+1,(path,Arc::new(dc)));
+    fn insert(list:&mut Vec<(String,String,Arc<DynClient>)>,name:String,path:String,dc:DynClient){
+        for (i,(n,_,_)) in list.iter().enumerate() {
+            if n.eq(&name) {
+                list[i] = (name,path,Arc::new(dc));
                 return;
             }
         }
-        list.insert(0,(path,Arc::new(dc)));
+        let mut i = list.len() as isize - 1;
+        while i >= 0 {
+            if list[i as usize].0.len() < path.len() {
+                list.insert((i as usize)+1,(name,path,Arc::new(dc)));
+                return;
+            }
+            i-=1;
+        }
+        list.insert(0,(name,path,Arc::new(dc)));
     }
 }
 
 impl DynMapDefault {
-    fn reset(&self,old_index:usize,list:Vec<(String,Arc<DynClient>)>)->usize{
+    fn reset(&self,old_index:usize,list:Vec<(String,String,Arc<DynClient>)>)->usize{
         let new_index = if old_index == 1 {
             0
         }else{
@@ -56,8 +64,9 @@ impl DynMap for DynMapDefault{
     fn get(&self, path: String) -> Option<Arc<DynClient>> {
         let index = self.index.load(Ordering::Relaxed);
         let rw = self.map.get(index).unwrap();
-        let map_r = rw.read().as_ref().unwrap();
-        for (p,client) in map_r.list.iter().rev() {
+        let binding = rw.read();
+        let map_r = binding.as_ref().unwrap();
+        for (_,p,client) in map_r.list.iter().rev() {
             if path.starts_with(p) {
                 return Some(client.clone())
             }
@@ -66,13 +75,14 @@ impl DynMap for DynMapDefault{
     }
 
     //fixme 需要加一个写操作的互斥锁，否则极小概率导致死锁
-    fn set(&self, path: String, dc: DynClient) {
+    fn set(&self,name:String, path: String, dc: DynClient) {
         let index = self.index.load(Ordering::Relaxed);
         let rw = self.map.get(index).unwrap();
-        let map_r = rw.read().as_ref().unwrap();
+        let binding = rw.read();
+        let map_r = binding.as_ref().unwrap();
         let mut map = map_r.list.clone();
         drop(rw);
-        MapList::insert(&mut map,path,dc);
+        MapList::insert(&mut map,name,path,dc);
         let new_index = self.reset(index, map);
         self.index.store(new_index,Ordering::Relaxed);
     }

@@ -31,6 +31,7 @@ pub trait JsonProtoTransition {
 
 pub trait PathIndex {
     fn search(&self, method: Method, path: String) -> Option<(String, Arc<MethodDescriptor>)>; //返回grpc路径  package.services/method
+    fn list(&self)->Vec<(Method,String,String)>{vec![]}
 }
 
 pub trait RestfulTransition {

@@ -1,3 +1,7 @@
 [server]
 name = "rust-grpc-proxy"
 addr = "0.0.0.0:666"
+
+[[proxy_sink]]
+name = "grpc-dyn-proxy-test"
+addr = "127.0.0.1:666"

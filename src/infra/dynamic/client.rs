@@ -6,6 +6,7 @@ use protobuf::reflect::MessageDescriptor;
 use std::collections::HashMap;
 
 pub struct DynClient {
+    name: String,
     host_port: String,
     protocol: String,
     client: Client<HttpConnector>,
@@ -21,6 +22,7 @@ impl DynClient {
         J: JsonProtoTransition + Send + Sync + 'static,
         P: PathIndex + Send + Sync + 'static,
     {
+        let name = "dyn-grpc-client".into();
         let client = hyper::Client::builder().http2_only(true).build_http();
         let format = Box::new(format);
         let index = Box::new(index);
@@ -28,6 +30,7 @@ impl DynClient {
         let host_port = String::from("127.0.0.1:443");
         let protocol = J::protocol();
         Self {
+            name,
             host_port,
             protocol,
             client,
@@ -40,6 +43,18 @@ impl DynClient {
     pub fn set_host_port<T: Into<String>>(mut self, host_post: T) -> Self {
         self.host_port = host_post.into();
         self
+    }
+    #[allow(dead_code)]
+    pub fn name(&self)->String{
+        self.name.clone()
+    }
+    #[allow(dead_code)]
+    pub fn set_name<T:ToString>(mut self,name:T)->Self{
+        self.name = name.to_string();self
+    }
+    #[allow(dead_code)]
+    pub fn method_list(&self)->Vec<(Method,String,String)>{
+        self.index.list()
     }
     #[allow(dead_code)]
     pub fn set_restful_transition<R: RestfulTransition + Send + Sync + 'static>(

@@ -1,12 +1,9 @@
-use crate::infra::server::{
-     HyperHttpServerBuilder, LogMiddle, RequestIdMiddle, ShutDown, TimeMiddle,
-};
-use hyper::{Body, Request, Response};
+use crate::infra::server::{ ShutDown};
 use std::future::Future;
 use std::pin::Pin;
-use std::time::Duration;
 use wd_log::Level;
 use wd_run::{CmdInfo, Context};
+use crate::app;
 use crate::config::{Config,Log};
 
 #[derive(Default)]
@@ -49,24 +46,27 @@ impl RunApplication {
         wd_log::log_debug_ln!("log config init success");
     }
 
-    pub async fn launch(_cfg:Config,sd:ShutDown) {
+    pub async fn launch(cfg:Config,sd:ShutDown) {
         wd_log::log_debug_ln!("start run application");
-        let _ = HyperHttpServerBuilder::new()
-            .handle(|_c, r: Request<Body>| async move {
-                let method = r.method();
-                let path = r.uri();
-                wd_log::log_debug_ln!("method:[{}] path:[{}]", method, path);
-                tokio::time::sleep(Duration::from_millis(100)).await;
-                Ok(Response::new(Body::from("success")))
-            })
-            .append_filter(TimeMiddle)
-            .append_filter(RequestIdMiddle::new())
-            .append_filter(LogMiddle)
-            // .run().await.expect("http服务报错");
-            .set_shutdown_singe(sd)
-            .async_run();
+        app::start(sd,cfg).await;
         wd_log::log_debug_ln!("run application success");
     }
+    // pub async fn launch(_cfg:Config,sd:ShutDown) {
+    //     let _ = HyperHttpServerBuilder::new()
+    //         .handle(|_c, r: Request<Body>| async move {
+    //             let method = r.method();
+    //             let path = r.uri();
+    //             wd_log::log_debug_ln!("method:[{}] path:[{}]", method, path);
+    //             tokio::time::sleep(Duration::from_millis(100)).await;
+    //             Ok(Response::new(Body::from("success")))
+    //         })
+    //         .append_filter(TimeMiddle)
+    //         .append_filter(RequestIdMiddle::new())
+    //         .append_filter(LogMiddle)
+    //         // .run().await.expect("http服务报错");
+    //         .set_shutdown_singe(sd)
+    //         .async_run();
+    // }
 }
 
 impl wd_run::EventHandle for RunApplication {

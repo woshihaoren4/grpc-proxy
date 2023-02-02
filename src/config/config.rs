@@ -42,6 +42,18 @@ field_generate!(Log;
     out_file_path,String,String::new(),"Log::out_file_path"
 );
 
+
+field_generate!(DynamicSink;
+    enable,bool,false,"DynamicSink::enable";
+    addr,String,String::from("0.0.0.0:888"),"DynamicSink::addr"
+);
+
+field_generate!(ProxySink;
+    name,String,String::from("default"),"ProxySink::name";
+    addr,String,String::from(""),"ProxySink::addr";
+    prefix,String,String::from("/"),"ProxySink::prefix"
+);
+
 // field_generate!(MongoDb;
 //     url,String,String::from("mongodb://dispatch_admin:1443965173@10.37.129.190:27019/dispatch"),"MongoDb::url";
 //     max_conn_size,u32,20u32,"MongoDb::max_conn_size");
@@ -68,6 +80,10 @@ pub struct Config {
     pub server: Server,
     #[serde(default = "Log::default")]
     pub log: Log,
+    #[serde(default= "Vec::new")]
+    pub proxy_sink : Vec<ProxySink>,
+    #[serde(default= "DynamicSink::default")]
+    pub dynamic_sink: DynamicSink,
     // #[serde(default = "DataSource::default")]
     // pub data_source: DataSource,
     // #[serde(default = "Redis::default")]
