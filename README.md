@@ -2,13 +2,12 @@
 > The grpc dynamic proxy is based on rust
 
 ## quick start
-1. start a grpc service with reflection,proto file following
+1. run a grpc service with reflection. You can use the following command to run a ready-made test program. The mac development environment is recommended.
+```shell
+./example/helloworld server
+```
+proto file following
 ```protobuf
-syntax = "proto3";
-package proto;
-option go_package = "./proto";
-import "google/api/annotations.proto";
-
 service HelloWorldService {
   rpc HelloWorld(HelloWorldRequest) returns (HelloWorldResponse){
     option (google.api.http) = {
@@ -16,13 +15,6 @@ service HelloWorldService {
       body: "*"
     };
   };
-}
-
-message HelloWorldRequest {
-  string request = 1;
-}
-message HelloWorldResponse {
-  string response = 1;
 }
 ```
 2. set name and address of the grpc service to the configuration file `./src/config/config.toml`
