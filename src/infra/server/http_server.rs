@@ -99,7 +99,7 @@ pub struct HyperHttpServerBuilder {
 
 impl HyperHttpServerBuilder {
     pub fn new() -> Self {
-        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 9999);
+        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 6789);
         let filters = vec![];
         let handle = None;
         let shutdown = None;

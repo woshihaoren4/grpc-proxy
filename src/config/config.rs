@@ -32,7 +32,7 @@ macro_rules! field_generate {
 
 field_generate!(Server;
     name,String,String::from("rust-grpc-proxy"),"Server::name";
-    addr,String,String::from("0.0.0.0:666"),"Server::addr"
+    addr,String,String::from("0.0.0.0:6789"),"Server::addr"
     // control_pre,String,String::from("/grpc/proxy"),"Server::control_pre"
 );
 field_generate!(Log;
@@ -45,7 +45,7 @@ field_generate!(Log;
 
 field_generate!(DynamicSink;
     enable,bool,false,"DynamicSink::enable";
-    addr,String,String::from("0.0.0.0:888"),"DynamicSink::addr"
+    addr,String,String::from("0.0.0.0:6790"),"DynamicSink::addr"
 );
 
 field_generate!(ProxySink;

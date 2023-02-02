@@ -24,6 +24,7 @@ pub async fn start(sd:ShutDown,cfg:Config){
     //todo 开启新的服务动态除了grpc sink变化
 
     let _ = HyperHttpServerBuilder::new()
+        .set_addr(cfg.server.addr.parse().expect("parse config server.addr error"))
         .handle(app)
         .append_filter(TimeMiddle)
         .append_filter(RequestIdMiddle::new())
