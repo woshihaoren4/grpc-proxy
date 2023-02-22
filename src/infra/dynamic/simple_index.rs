@@ -19,9 +19,10 @@ impl Node {
         &self,
         method: &Method,
         path: &String,
-    ) -> Option<(String, Arc<MethodDescriptor>)> {
+    ) -> Option<(String, Arc<MethodDescriptor>,Option<HashMap<String,String>>)> {
         if self.http_path.eq(path) && self.method.eq(method) {
-            Some((self.grpc_path.clone(), self.desc.clone()))
+            //todo 需要解析restful
+            Some((self.grpc_path.clone(), self.desc.clone(),None))
         } else {
             None
         }
@@ -113,7 +114,7 @@ impl SimpleIndex {
 }
 
 impl PathIndex for SimpleIndex {
-    fn search(&self, method: Method, path: String) -> Option<(String, Arc<MethodDescriptor>)> {
+    fn search(&self, method: Method, path: String) -> Option<(String, Arc<MethodDescriptor>,Option<HashMap<String,String>>)> {
         for n in self.nodes.iter() {
             if let Some(s) = n.path_match(&method, &path) {
                 return Some(s);

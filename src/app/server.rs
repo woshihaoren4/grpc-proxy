@@ -43,7 +43,8 @@ impl HttpHandle for AppEntity{
             Some(c) => c,
         };
 
-        let resp_content = match client.invoke(method, path, metadata, body).await{
+        //todo 需要将query 拼接到option中
+        let resp_content = match client.invoke(method, path, metadata, body,None).await{
             Ok((_,o)) => o,
             Err(e) => return AppEntity::error(e.to_string()),
         };

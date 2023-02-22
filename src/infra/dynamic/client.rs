@@ -1,4 +1,4 @@
-use super::{JsonProtoTransition, PathIndex, RestfulTransition, RestfulTransitionDefaultImpl};
+use super::{JsonProtoTransition, PathIndex};
 use hyper::body::Bytes;
 use hyper::client::{connect::HttpConnector, Client};
 use hyper::{Body, Method};
@@ -11,7 +11,7 @@ pub struct DynClient {
     protocol: String,
     client: Client<HttpConnector>,
     format: Box<dyn JsonProtoTransition + Send + Sync + 'static>,
-    restful: Box<dyn RestfulTransition + Send + Sync + 'static>,
+    // restful: Box<dyn RestfulTransition + Send + Sync + 'static>,
     index: Box<dyn PathIndex + Send + Sync + 'static>,
 }
 
@@ -26,7 +26,6 @@ impl DynClient {
         let client = hyper::Client::builder().http2_only(true).build_http();
         let format = Box::new(format);
         let index = Box::new(index);
-        let restful = Box::new(RestfulTransitionDefaultImpl);
         let host_port = String::from("127.0.0.1:443");
         let protocol = J::protocol();
         Self {
@@ -35,7 +34,6 @@ impl DynClient {
             protocol,
             client,
             format,
-            restful,
             index,
         }
     }
@@ -57,14 +55,6 @@ impl DynClient {
         self.index.list()
     }
     #[allow(dead_code)]
-    pub fn set_restful_transition<R: RestfulTransition + Send + Sync + 'static>(
-        mut self,
-        restful_tran: R,
-    ) -> Self {
-        self.restful = Box::new(restful_tran);
-        self
-    }
-    #[allow(dead_code)]
     fn error<T: Into<Vec<u8>>>(s: T) -> anyhow::Result<(HashMap<String, String>, Vec<u8>)> {
         return Ok((HashMap::new(), s.into()));
     }
@@ -79,13 +69,24 @@ impl DynClient {
         path: String,
         metadata: HashMap<String, String>,
         body: Vec<u8>,
+        extend: Option<HashMap<String,String>>
     ) -> anyhow::Result<(HashMap<String, String>, Vec<u8>)> {
-        let (grpc_path, desc) = if let Some(o) = self.index.search(method, path.clone()) {
+        let (grpc_path, desc,restful) = if let Some(o) = self.index.search(method, path) {
             o
         } else {
             return DynClient::error("not found");
         };
-        let body = self.json_request_to_grpc(path, body, desc.input_type())?;
+        let extend = if let Some(mut mp) = extend {
+            if let Some(rf) = restful {
+                for (k,v) in rf{
+                    mp.insert(k,v);
+                }
+            }
+            Some(mp)
+        }else{
+            restful
+        };
+        let body = self.json_request_to_grpc( body, desc.input_type(),extend)?;
         let (status, md, resp_body) = self.do_grpc_request(grpc_path, metadata, body).await?;
         if status != 200 {
             let resp_result = String::from_utf8_lossy(resp_body.to_vec().as_slice()).to_string();
@@ -97,12 +98,13 @@ impl DynClient {
 
     pub fn json_request_to_grpc(
         &self,
-        path: String,
+        // path: String,
         body: Vec<u8>,
         desc: MessageDescriptor,
+        extend: Option<HashMap<String,String>>,
     ) -> anyhow::Result<Vec<u8>> {
-        let ps = self.restful.path(path);
-        let body = self.format.json_to_proto(body, desc, ps)?;
+        // let ps = self.restful.path(path);
+        let body = self.format.json_to_proto(body, desc, extend)?;
         Ok(body)
         // let mut buf = vec![0];
         // let mut len = (body.len() as u32).to_be_bytes().to_vec();

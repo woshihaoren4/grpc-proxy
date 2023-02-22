@@ -96,6 +96,7 @@ impl wd_run::EventHandle for TestExampleDynClient {
                     "/api/v2/hello".into(),
                     HashMap::new(),
                     request_body,
+                    None,
                 )
                 .await
                 .expect("invoke grpc request failed");

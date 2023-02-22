@@ -21,7 +21,8 @@ pub async fn start(sd:ShutDown,cfg:Config){
     let map = Arc::new(DynMapDefault::default());
     let app = AppEntity::new(map.clone());
     init_proxy_sink(map,cfg.proxy_sink).await;
-    //todo 开启新的服务动态除了grpc sink变化
+
+    //todo 开启新的服务动态监听grpc sink变化 gateway 模式
 
     let _ = HyperHttpServerBuilder::new()
         .set_addr(cfg.server.addr.parse().expect("parse config server.addr error"))
@@ -40,7 +41,7 @@ pub async fn show(cfg:Config){
         return;
     }
     for i in cfg.proxy_sink.iter(){
-        wd_log::log_info_ln!("---------> start refect grpc server[{}] <---------",i.name);
+        wd_log::log_info_ln!("---------> start reflect grpc server[{}] <---------",i.name);
         let client = wd_log::res_panic!(init_dyn_client(i.name.clone(),i.addr.clone()).await;"init_proxy_sink: init {} failed,addr=({})",i.name,i.addr);
         let list = client.method_list();
         for i in list.iter(){

@@ -18,7 +18,7 @@ impl MapList {
     fn new(list:Vec<(String,String,Arc<DynClient>)>)->Self{
         Self{list}
     }
-    fn insert(list:&mut Vec<(String,String,Arc<DynClient>)>,name:String,path:String,dc:DynClient){
+    fn insert(list:&mut Vec<(String,String,Arc<DynClient>)>,name:String,path:String,dc:DynClient){  //短的在前，长的在后
         for (i,(n,_,_)) in list.iter().enumerate() {
             if n.eq(&name) {
                 list[i] = (name,path,Arc::new(dc));
