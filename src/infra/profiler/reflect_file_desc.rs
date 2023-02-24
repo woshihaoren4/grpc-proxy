@@ -61,6 +61,7 @@ impl FileDescProfiler {
         for i in self.services_filter.iter() {
             i.filter(&mut services);
         }
+        wd_log::log_debug_ln!("[{}] reflect success --> {:?}",&server,services);
         let map = FileDescProfiler::get_file_desc_by_services(&mut client, services).await?;
         let services = self.services_desc_assemble.assemble(map)?;
         Ok(services)
@@ -90,11 +91,24 @@ impl FileDescProfiler {
             .into_inner();
         let mut list = vec![];
         while let Some(s) = resp.next().await {
-            if let MessageResponse::ListServicesResponse(s) = s.unwrap().message_response.unwrap() {
-                for i in s.service.into_iter() {
-                    list.push(i.name)
+            match s {
+                Ok(o)=>{
+                    if let MessageResponse::ListServicesResponse(s) = o.message_response.unwrap() {
+                        for i in s.service.into_iter() {
+                            list.push(i.name)
+                        }
+                    }
+                    break
                 }
-            }
+                Err(e)=>{
+                    return Err(anyhow::anyhow!("get_service_list error: status:[{}] message:{}",e.code(),e.message()));
+                }
+            };
+            // if let MessageResponse::ListServicesResponse(s) = s.unwrap().message_response.unwrap() {
+            //     for i in s.service.into_iter() {
+            //         list.push(i.name)
+            //     }
+            // }
         }
         return Ok(list);
     }

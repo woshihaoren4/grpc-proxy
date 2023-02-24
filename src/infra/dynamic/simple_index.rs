@@ -10,22 +10,54 @@ use std::sync::Arc;
 struct Node {
     method: Method,
     http_path: String,
+    http_path_list: Vec<String>,
+    http_path_match: Vec<String>,
     grpc_path: String,
     desc: Arc<MethodDescriptor>,
 }
 
 impl Node {
-    pub fn path_match(
+    // pub fn path_match(
+    //     &self,
+    //     method: &Method,
+    //     path: &String,
+    // ) -> Option<(String, Arc<MethodDescriptor>)> {
+    //     if self.http_path.eq(path) && self.method.eq(method) {
+    //         Some((self.grpc_path.clone(), self.desc.clone()))
+    //     } else {
+    //         None
+    //     }
+    // }
+
+    pub fn path_match_restful(
         &self,
         method: &Method,
-        path: &String,
+        path: &Vec<&str>,
     ) -> Option<(String, Arc<MethodDescriptor>,Option<HashMap<String,String>>)> {
-        if self.http_path.eq(path) && self.method.eq(method) {
-            //todo 需要解析restful
-            Some((self.grpc_path.clone(), self.desc.clone(),None))
-        } else {
-            None
+        if method != self.method {
+            return None
         }
+        let mut opt:Option<HashMap<String,String>> = None;
+        for (i,v) in self.http_path_match.iter().enumerate(){
+            let p = if let Some(p) = path.get(i){
+                *p
+            }else{
+                return None
+            };
+            if v.as_str() == "*" {
+                let key = self.http_path_list[i].clone();
+                let value = p.to_string();
+                if let Some(ref mut mp) = &mut opt {
+                    mp.insert(key,value);
+                }else{
+                    let mp = HashMap::from([(key,value)]);
+                    opt = Some(mp);
+                }
+            }else if v != p {
+                return None
+            }
+        }
+        return Some((self.grpc_path.clone(),self.desc.clone(),opt))
     }
 
     //SimpleIndex 只是一个简单实现的路由模块,所有此处魔数硬编码 详见如下文档
@@ -69,11 +101,26 @@ impl Node {
             Pattern::Patch(p) => (Method::PATCH, p),
             Pattern::Custom(_) => return None, //SimpleIndex 暂时不支持自定义方法名
         };
+        let mut http_path_list = vec![];
+        let mut http_path_match = vec![];
+        let list:Vec<&str> = http_path.split('/').collect();
+        for i in list.into_iter(){
+            if i.starts_with('{') && i.ends_with('}') {
+                let filters:&[_] = &['{','}'];
+                http_path_match.push("*".into());
+                http_path_list.push(i.trim_matches(filters).to_string());
+            }else{
+                http_path_match.push(i.to_string());
+                http_path_list.push(i.into());
+            }
+        }
         let grpc_path = format!("{}/{}", service_name, method_name);
         let desc = Arc::new(desc);
         Some(Self {
             method,
             http_path,
+            http_path_list,
+            http_path_match,
             grpc_path,
             desc,
         })
@@ -115,8 +162,9 @@ impl SimpleIndex {
 
 impl PathIndex for SimpleIndex {
     fn search(&self, method: Method, path: String) -> Option<(String, Arc<MethodDescriptor>,Option<HashMap<String,String>>)> {
+        let path_list:Vec<&str> = path.split('/').collect();
         for n in self.nodes.iter() {
-            if let Some(s) = n.path_match(&method, &path) {
+            if let Some(s) = n.path_match_restful(&method, &path_list) {
                 return Some(s);
             }
         }

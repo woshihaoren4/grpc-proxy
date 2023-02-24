@@ -1,13 +1,16 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use crate::infra::dynamic::DynClient;
 
 mod server;
 mod proxy_sink;
 mod dyn_map_simple;
+mod query_analysis_impl;
 
 pub use server::AppEntity;
 pub use proxy_sink::*;
 use crate::app::dyn_map_simple::DynMapDefault;
+use crate::app::query_analysis_impl::QueryAnalysisDefaultImpl;
 use crate::config::{Config};
 use crate::infra::server::{HyperHttpServerBuilder, LogMiddle, RequestIdMiddle, ShutDown, TimeMiddle};
 
@@ -15,11 +18,14 @@ pub trait DynMap:Send+Sync{
     fn get(&self,path:String)->Option<Arc<DynClient>>;
     fn set(&self,name:String,path:String,dc:DynClient);
 }
+pub trait QueryAnalysis:Send+Sync{
+    fn analysis(&self,query:&str)->Option<HashMap<String,String>>;
+}
 
 
 pub async fn start(sd:ShutDown,cfg:Config){
     let map = Arc::new(DynMapDefault::default());
-    let app = AppEntity::new(map.clone());
+    let app = AppEntity::new(map.clone(),Arc::new(QueryAnalysisDefaultImpl));
     init_proxy_sink(map,cfg.proxy_sink).await;
 
     //todo 开启新的服务动态监听grpc sink变化 gateway 模式

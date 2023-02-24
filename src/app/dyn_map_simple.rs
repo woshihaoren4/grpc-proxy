@@ -6,7 +6,7 @@ use crate::infra::dynamic::DynClient;
 
 #[derive(Default)]
 pub struct MapList{
-    list:Vec<(String,String,Arc<DynClient>)>
+    list:Vec<(String,String,Arc<DynClient>)>  //name,path,dyn client
 }
 pub struct DynMapDefault{
     map:Vec<RwLock<MapList>>,

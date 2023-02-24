@@ -25,11 +25,15 @@ pub struct ServicesFilterDefaultImpl;
 impl ServicesFilter for ServicesFilterDefaultImpl {
     fn filter(&self, services: &mut Vec<String>) {
         let mut i = 0;
-        while i < services.len() {
-            if services[i].starts_with("grpc.") {
-                //grpc.开头的服务是官方接口 理论上都是不需要的
-                services.remove(i);
-                i += 1;
+        loop {
+            if let Some(s) = services.get(i) {
+                if s.starts_with("grpc.") {
+                    services.remove(i);
+                } else {
+                    i += 1
+                }
+            } else {
+                break
             }
         }
     }
