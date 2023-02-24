@@ -51,6 +51,7 @@ EOF
 
 case $1 in
 clean)
+  kill -2 $(lsof -i:6789 | grep rust-grpc | awk '{print $2}')
   screen -R $GRPC_PROXY -X quit ; echo "$GRPC_PROXY 已清理"
   screen -R $SERVICE_ECHO -X quit ; echo "$SERVICE_ECHO 已清理"
   screen -R $SERVICE_GREET -X quit ; echo "$SERVICE_GREET 已清理"
@@ -106,6 +107,13 @@ then
     echo ""
 else
   echo "$GRPC_PROXY 服务已经启动"
+fi
+
+if [ ! -x "$(command -v jq)" ];then
+  echo 'jq not found , please install'
+  echo '    MAC    : brew install jq'
+  echo '    Ubuntu : sudo apt-get install jq'
+  exit 1
 fi
 
 test_one
