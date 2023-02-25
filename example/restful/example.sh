@@ -7,7 +7,7 @@ CONFIG_PATH="config.toml"
 
 function test_one() {
     result=$(curl -s -l --location --request GET 'http://127.0.0.1:6789/api/v1/echo/hello/get?query=666' | jq -r '."response"')
-    assert_eq "$result" 'GET [serverA]---> request=hello query=666' "test_one"
+    assert_eq "$result" 'GET [SERVICE_ECHO]---> request=hello query=666' "test_one"
 }
 function test_two() {
     result=$(curl  -s -l --location --request GET 'http://127.0.0.1:6789/api/v1/greet/hello?content=world' | jq -r '.response')
@@ -20,7 +20,7 @@ function test_three() {
                  "request": "hello",
                  "query": 123
              }' | jq -r '.response')
-    assert_eq "$result" 'POST [serverA]---> request=hello query=123' "test_three"
+    assert_eq "$result" 'POST [SERVICE_ECHO]---> request=hello query=123' "test_three"
 }
 
 function assert_eq() {
