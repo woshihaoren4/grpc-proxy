@@ -43,15 +43,16 @@ impl DynClient {
         self
     }
     #[allow(dead_code)]
-    pub fn name(&self)->String{
+    pub fn name(&self) -> String {
         self.name.clone()
     }
     #[allow(dead_code)]
-    pub fn set_name<T:ToString>(mut self,name:T)->Self{
-        self.name = name.to_string();self
+    pub fn set_name<T: ToString>(mut self, name: T) -> Self {
+        self.name = name.to_string();
+        self
     }
     #[allow(dead_code)]
-    pub fn method_list(&self)->Vec<(Method,String,String)>{
+    pub fn method_list(&self) -> Vec<(Method, String, String)> {
         self.index.list()
     }
     #[allow(dead_code)]
@@ -69,24 +70,24 @@ impl DynClient {
         path: String,
         metadata: HashMap<String, String>,
         body: Vec<u8>,
-        extend: Option<HashMap<String,String>>
+        extend: Option<HashMap<String, String>>,
     ) -> anyhow::Result<(HashMap<String, String>, Vec<u8>)> {
-        let (grpc_path, desc,restful) = if let Some(o) = self.index.search(method, path) {
+        let (grpc_path, desc, restful) = if let Some(o) = self.index.search(method, path) {
             o
         } else {
             return DynClient::error("not found");
         };
         let extend = if let Some(mut mp) = extend {
             if let Some(rf) = restful {
-                for (k,v) in rf{
-                    mp.insert(k,v);
+                for (k, v) in rf {
+                    mp.insert(k, v);
                 }
             }
             Some(mp)
-        }else{
+        } else {
             restful
         };
-        let body = self.json_request_to_grpc( body, desc.input_type(),extend)?;
+        let body = self.json_request_to_grpc(body, desc.input_type(), extend)?;
         let (status, md, resp_body) = self.do_grpc_request(grpc_path, metadata, body).await?;
         if status != 200 {
             let resp_result = String::from_utf8_lossy(resp_body.to_vec().as_slice()).to_string();
@@ -101,7 +102,7 @@ impl DynClient {
         // path: String,
         body: Vec<u8>,
         desc: MessageDescriptor,
-        extend: Option<HashMap<String,String>>,
+        extend: Option<HashMap<String, String>>,
     ) -> anyhow::Result<Vec<u8>> {
         // let ps = self.restful.path(path);
         let body = self.format.json_to_proto(body, desc, extend)?;

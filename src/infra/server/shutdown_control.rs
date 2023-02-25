@@ -6,18 +6,18 @@ use tokio::time::sleep;
 #[derive(Debug, Clone)]
 pub struct ShutDownControl {
     status: Arc<AtomicU8>,
-    enable: Arc<AtomicBool>
+    enable: Arc<AtomicBool>,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct ShutDown {
-    status: Arc<AtomicU8>,  //关闭进度
-    enable: Arc<AtomicBool> //是否需要等待通知
+    status: Arc<AtomicU8>,   //关闭进度
+    enable: Arc<AtomicBool>, //是否需要等待通知
 }
 
 impl ShutDown {
-    pub fn new(status: Arc<AtomicU8>,enable:Arc<AtomicBool>) -> ShutDown {
-        ShutDown { status,enable }
+    pub fn new(status: Arc<AtomicU8>, enable: Arc<AtomicBool>) -> ShutDown {
+        ShutDown { status, enable }
     }
     pub async fn wait_close(&self) {
         while self.status.load(Ordering::Relaxed) < 2 {
@@ -54,15 +54,15 @@ impl ShutDownControl {
     pub fn new() -> ShutDownControl {
         Self {
             status: Arc::new(AtomicU8::new(0)),
-            enable: Arc::new(AtomicBool::new(false))
+            enable: Arc::new(AtomicBool::new(false)),
         }
     }
     pub fn generate_shutdown(&self) -> ShutDown {
-        ShutDown::new(self.status.clone(),self.enable.clone())
+        ShutDown::new(self.status.clone(), self.enable.clone())
     }
     //等待接受停止信号
     pub async fn wait(&self) {
-        self.enable.store(true,Ordering::Relaxed);
+        self.enable.store(true, Ordering::Relaxed);
         while self.status.load(Ordering::Relaxed) == 0 {
             sleep(Duration::from_millis(10)).await;
         }
@@ -77,7 +77,7 @@ impl From<ShutDown> for ShutDownControl {
     fn from(value: ShutDown) -> Self {
         ShutDownControl {
             status: value.status,
-            enable: value.enable
+            enable: value.enable,
         }
     }
 }

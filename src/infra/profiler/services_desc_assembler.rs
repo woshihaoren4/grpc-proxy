@@ -32,11 +32,14 @@ impl ServiceDescriptorAssembler for ServiceDescriptorAssemblerDefaultImpl {
         for (k, list) in input.into_iter() {
             let name = k.split('.').map(|x| x).collect::<Vec<&str>>();
             services.insert(name[1].to_string(), k);
-            for i in list.into_iter(){
-                files.insert(i.name().to_string(),i);
+            for i in list.into_iter() {
+                files.insert(i.name().to_string(), i);
             }
         }
-        let files = files.into_iter().map(|x|x.1).collect::<Vec<FileDescriptorProto>>();
+        let files = files
+            .into_iter()
+            .map(|x| x.1)
+            .collect::<Vec<FileDescriptorProto>>();
         let desc_files = protobuf::reflect::FileDescriptor::new_dynamic_fds(files, &[])?;
         for i in desc_files.into_iter() {
             for sd in i.services().into_iter() {

@@ -33,7 +33,7 @@ impl ServicesFilter for ServicesFilterDefaultImpl {
                     i += 1
                 }
             } else {
-                break
+                break;
             }
         }
     }
