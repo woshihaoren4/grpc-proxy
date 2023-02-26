@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "./proto";
+//import "google/protobuf/struct.proto";
+
+import "google/api/annotations.proto";
+
+
+
+// Echo Service
+service EchoService {
+  rpc EchoGet(EchoGetRequest) returns (EchoGetResponse){
+    option (google.api.http) = {
+      get: "/api/v1/echo/{request}/get"
+    };
+  };
+  rpc EchoPost(EchoGetRequest) returns (EchoGetResponse){
+    option (google.api.http) = {
+      post: "/api/v1/echo/post"
+      body: "*"
+    };
+  };
+}
+
+// Echo Service
+service GreetService {
+  rpc GreetGet(GreetGetRequest) returns (GreetGetResponse){
+    option (google.api.http) = {
+      get: "/api/v1/greet/{request}"
+    };
+  };
+}
+
+message EchoGetRequest {
+  string request = 1;
+  int32 query = 2;
+}
+
+message EchoGetResponse {
+  string response = 1;
+}
+
+message GreetGetRequest {
+  string request = 1;
+  string content = 2;
+}
+
+message GreetGetResponse {
+  string response = 1;
+}

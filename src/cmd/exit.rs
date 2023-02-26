@@ -1,6 +1,7 @@
 use crate::infra::server::ShutDown;
 use std::future::Future;
 use std::pin::Pin;
+use std::process::exit;
 use wd_run::Context;
 
 pub struct ExitApplication {
@@ -20,6 +21,7 @@ impl wd_run::EventHandle for ExitApplication {
             wd_log::log_debug_ln!("exit signal is received, the application begins to exit");
             sd.close().await;
             wd_log::log_debug_ln!("application exit succeeded");
+            exit(0);
             return ctx;
         })
     }

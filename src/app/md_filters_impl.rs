@@ -13,7 +13,8 @@ pub struct MetadataAnalysisDefaultImpl {
 impl From<&MetadataFilter> for MetadataAnalysisDefaultImpl {
     fn from(mf: &MetadataFilter) -> Self {
         let mut has = HashMap::new();
-        while let Some(key) = mf.r#match.iter().next() {
+        let mut iter = mf.r#match.iter();
+        while let Some(key) = iter.next() {
             has.insert(key.clone(), true);
         }
         let prefix = mf.prefix.clone();
