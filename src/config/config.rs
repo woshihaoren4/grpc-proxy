@@ -54,30 +54,10 @@ field_generate!(ProxySink;
 );
 
 field_generate!(MetadataFilter;
-    prefix,Vec<String>,vec![String::from("MD-")],"MetadataFilter::prefix";
+    prefix,Vec<String>,vec![String::from("md-")],"MetadataFilter::prefix";
     r#match,Vec<String>,vec![],"MetadataFilter::r#match";
     response_show_server,bool,true,"MetadataFilter::response_show_server"
 );
-
-// field_generate!(MongoDb;
-//     url,String,String::from("mongodb://dispatch_admin:1443965173@10.37.129.190:27019/dispatch"),"MongoDb::url";
-//     max_conn_size,u32,20u32,"MongoDb::max_conn_size");
-//
-// field_generate!(Redis;
-//     url,String,String::from("redis://:passwd@10.37.129.190:6379/0"),"Redis::url";
-//     max_conn_size,u64,20u64,"Redis::max_conn_size";
-//     max_idle_conn,u64,1u64,"Redis::max_idle_conn");
-//
-// #[derive(Serialize, Deserialize, Clone, Debug)]
-// #[serde(tag = "type")]
-// pub enum DataSourceDriver {
-//     Mysql,
-//     Postgresql,
-//     Mongo(MongoDb),
-// }
-
-// field_generate!(DataSource;
-//     driver,DataSourceDriver,DataSourceDriver::Mongo(MongoDb::default()),"DataSource::driver");
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -91,10 +71,6 @@ pub struct Config {
     pub dynamic_sink: DynamicSink,
     #[serde(default = "MetadataFilter::default")]
     pub metadata_filters: MetadataFilter,
-    // #[serde(default = "DataSource::default")]
-    // pub data_source: DataSource,
-    // #[serde(default = "Redis::default")]
-    // pub cache: Redis,
 }
 
 impl Config {

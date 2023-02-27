@@ -1,17 +1,12 @@
 #!/bin/bash
 
 SERVICE_ECHO="SERVICE_ECHO"
-SERVICE_GREET="SERVICE_GREET"
 GRPC_PROXY="GRPC_PROXY"
 CONFIG_PATH="config.toml"
 
 function test_one() {
     result=$(curl -s -l --location --request GET 'http://127.0.0.1:6789/api/v1/echo/hello/get?query=666' | jq -r '."response"')
     assert_eq "$result" 'GET [SERVICE_ECHO]---> request=hello query=666' "test_one"
-}
-function test_two() {
-    result=$(curl  -s -l --location --request GET 'http://127.0.0.1:6789/api/v1/greet/hello?content=world' | jq -r '.response')
-    assert_eq "$result" 'Get [SERVICE_GREET]---> request=hello query=world' "test_two"
 }
 function test_three() {
     result=$(curl  -s -l --location --request POST 'http://127.0.0.1:6789/api/v1/echo/post' \
@@ -43,17 +38,11 @@ show_file_line = false
 [[proxy_sink]]
 name = "echo"
 addr = "127.0.0.1:1234"
-prefix = "/api/v1/echo"
-
-[[proxy_sink]]
-name = "hello"
-addr = "127.0.0.1:1235"
-prefix = "/api/v1/greet"
+prefix = "/"
 
 [metadata_filters]
 prefix = ["echo-","greet-"]
 match = ["use-name","use-id"]
-
 EOF
 }
 
@@ -65,23 +54,14 @@ function start_server() {
       echo "$SERVICE_ECHO 服务已经启动"
     fi
 
-    if [ $(screen -ls | grep -c $SERVICE_GREET) -le 0 ]
-    then
-      screen -dmS $SERVICE_GREET /bin/bash -c "./server server -n $SERVICE_GREET -a :1235" && echo "测试服务[$SERVICE_GREET]已启动"
-    else
-      echo "$SERVICE_GREET 服务已经启动"
-    fi
-
 }
 
 case $1 in
 clean)
   kill -2 $(lsof -i:6789 | grep rust-grpc | awk '{print $2}')
   kill -2 $(lsof -i:1234 | grep server | awk '{print $2}')
-  kill -2 $(lsof -i:1235 | grep server | awk '{print $2}')
   screen -R $GRPC_PROXY -X quit ; echo "$GRPC_PROXY 已清理"
   screen -R $SERVICE_ECHO -X quit ; echo "$SERVICE_ECHO 已清理"
-  screen -R $SERVICE_GREET -X quit ; echo "$SERVICE_GREET 已清理"
   rm $CONFIG_PATH ; echo "配置文件[$CONFIG_PATH] 已清理"
   exit
   ;;
@@ -97,7 +77,7 @@ esac
 
 
 
-
+start_server
 
 
 if [ ! -e $CONFIG_PATH ]
@@ -136,7 +116,5 @@ if [ ! -x "$(command -v jq)" ];then
 fi
 
 test_one
-
-test_two
 
 test_three
