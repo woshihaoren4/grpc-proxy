@@ -1,0 +1,19 @@
+apiVersion: v1
+data:
+  config.toml: |-
+    [log]
+    show_file_line = false
+
+    [[proxy_sink]]
+    name = "echo"
+    # src server addr
+    addr = "10.42.0.43:1234"
+    prefix = "/api/v1/echo"
+
+    [metadata_filters]
+    prefix = ["echo-","greet-"]
+    match = ["use-name","use-id"]
+kind: ConfigMap
+metadata:
+  name: rust-grpc-proxy-config.toml
+  namespace: qa

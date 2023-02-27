@@ -28,7 +28,7 @@ cargo build --release --target=x86_64-unknown-linux-musl
 chmod +x target/x86_64-unknown-linux-musl/release/rust-grpc-proxy
 tag="wdshihaoren/rust-grpc-proxy:v0.0.2-t"
 docker build -f ./Dockerfile -t "$tag"  .
-#  docker pull "wdshihaoren/rust-grpc-proxy
+docker pull "$tag"
 rm -rf .cargo
   ;;
 *)
