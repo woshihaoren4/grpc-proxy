@@ -1,0 +1,25 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: grpc-proxy-webhook-cfg
+  labels:
+    app: grpc-proxy-webhook
+webhooks:
+  - name: mutating.grpc-proxy-webhook.com
+    admissionReviewVersions: [ "v1", "v1beta1" ]
+    sideEffects: None
+    clientConfig:
+      service:
+        name: grpc-proxy-webhook-svc
+        namespace: qa
+        path: "/sidecar/rust-grpc-proxy"
+      caBundle: ${CA_BUNDLE}
+    rules:
+      - operations: [ "CREATE,UPDATE" ]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+#    namespaceSelector:
+#      matchLabels:
+#        grpc-proxy-webhook: enabled
+

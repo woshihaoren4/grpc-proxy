@@ -1,6 +1,6 @@
 use crate::app::MetadataAnalysis;
 use crate::config::MetadataFilter;
-use hyper::header::{HeaderValue};
+use hyper::header::HeaderValue;
 use hyper::HeaderMap;
 use std::collections::HashMap;
 

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-proxy-webhook-deployment
+  labels:
+    app: grpc-proxy-webhook
+  namespace: qa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-proxy-webhook
+  template:
+    metadata:
+      labels:
+        app: grpc-proxy-webhook
+    spec:
+      serviceAccount: grpc-proxy-webhook-sa
+      containers:
+        - name: grpc-proxy-webhook
+          image: registry.cn-hangzhou.aliyuncs.com/wshr/wd:sidecar-v1
+          imagePullPolicy: Always
+          args:
+            - -tlsCertFile=/etc/webhook/certs/cert.pem
+            - -tlsKeyFile=/etc/webhook/certs/key.pem
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: grpc-proxy-webhook-certs

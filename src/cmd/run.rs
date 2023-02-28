@@ -31,8 +31,13 @@ impl RunApplication {
             .copy::<_, String>("c")
             .await
             .expect("load config failed");
-        let cfg = Config::from_file_by_path(&path)
-            .expect(&*format!("from file:[{}] load config error", path));
+        let cfg = match Config::from_file_by_path(&path) {
+            Ok(o) => o,
+            Err(e) => {
+                wd_log::log_info_ln!("from file:[{}] load config error={}", path,e);
+                Config::default()
+            }
+        };
         wd_log::log_debug_ln!("config file load success:{}", cfg.to_string());
         return cfg;
     }

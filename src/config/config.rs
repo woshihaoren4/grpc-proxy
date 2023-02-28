@@ -59,7 +59,15 @@ field_generate!(MetadataFilter;
     response_show_server,bool,true,"MetadataFilter::response_show_server"
 );
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+field_generate!(EnvSink;
+    disable,bool,false,"EnvSink::disable";
+    addr_env_key,String,String::from("RUST_GRPC_PROXY_ADDR"),"EnvSink::addr_env_key";
+    wait_time_max_sec,u64,300,"EnvSink::wait_time_max_sec";
+    interval_sec,u64,10,"EnvSink::interval_sec";
+    prefix,String,String::from("/"),"EnvSink::prefix"
+);
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Config {
     #[serde(default = "Server::default")]
     pub server: Server,
@@ -71,6 +79,8 @@ pub struct Config {
     pub dynamic_sink: DynamicSink,
     #[serde(default = "MetadataFilter::default")]
     pub metadata_filters: MetadataFilter,
+    #[serde(default = "EnvSink::default")]
+    pub env_sink: EnvSink,
 }
 
 impl Config {
