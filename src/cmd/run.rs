@@ -1,10 +1,10 @@
-use crate::infra::server::{ ShutDown};
+use crate::app;
+use crate::config::{Config, Log};
+use crate::infra::server::ShutDown;
 use std::future::Future;
 use std::pin::Pin;
 use wd_log::Level;
 use wd_run::{CmdInfo, Context};
-use crate::app;
-use crate::config::{Config,Log};
 
 #[derive(Default)]
 pub struct RunApplication {
@@ -26,17 +26,21 @@ impl RunApplication {
             "config file path",
         )
     }
-    pub async fn load_config(ctx: &Context)->Config{
-        let path = ctx.copy::<_,String>("c").await.expect("load config failed");
-        let cfg = Config::from_file_by_path(&path).expect(&*format!("from file:[{}] load config error", path));
-        wd_log::log_debug_ln!("config file load success:{}",cfg.to_string());
-        return cfg
+    pub async fn load_config(ctx: &Context) -> Config {
+        let path = ctx
+            .copy::<_, String>("c")
+            .await
+            .expect("load config failed");
+        let cfg = Config::from_file_by_path(&path)
+            .expect(&*format!("from file:[{}] load config error", path));
+        wd_log::log_debug_ln!("config file load success:{}", cfg.to_string());
+        return cfg;
     }
-    pub fn init_log(app:String, log:Log){
+    pub fn init_log(app: String, log: Log) {
         wd_log::set_level(Level::from(log.level));
         // unsafe {
-            let name: &'static str = Box::leak(app.into());
-            wd_log::set_prefix(name);
+        let name: &'static str = Box::leak(app.into());
+        wd_log::set_prefix(name);
         // }
         wd_log::show_time(log.show_time);
         wd_log::show_file_line(log.show_file_line);
@@ -46,9 +50,9 @@ impl RunApplication {
         wd_log::log_debug_ln!("log config init success");
     }
 
-    pub async fn launch(cfg:Config,sd:ShutDown) {
+    pub async fn launch(cfg: Config, sd: ShutDown) {
         wd_log::log_debug_ln!("start run application");
-        app::start(sd,cfg).await;
+        app::start(sd, cfg).await;
         wd_log::log_debug_ln!("run application success");
     }
     // pub async fn launch(_cfg:Config,sd:ShutDown) {
@@ -74,8 +78,8 @@ impl wd_run::EventHandle for RunApplication {
         let sd = self.sd.clone();
         Box::pin(async move {
             let cfg = RunApplication::load_config(&ctx).await;
-            RunApplication::init_log(cfg.server.name.clone(),cfg.log.clone());
-            RunApplication::launch(cfg,sd.clone()).await; //启动客户端
+            RunApplication::init_log(cfg.server.name.clone(), cfg.log.clone());
+            RunApplication::launch(cfg, sd.clone()).await; //启动客户端
             sd.wait_close().await;
             return ctx;
         })

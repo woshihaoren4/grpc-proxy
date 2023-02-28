@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rust-grpc-proxy
+  namespace: qa
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rust-grpc-proxy
+  template:
+    metadata:
+      labels:
+        app: rust-grpc-proxy
+    spec:
+      affinity: {}
+      containers:
+        - args:
+            - run
+          command:
+            - ./rust-grpc-proxy
+          image: wdshihaoren/rust-grpc-proxy:v0.0.2-t
+          imagePullPolicy: Always
+          name: container-0
+          ports:
+            - containerPort: 6789
+              name: http-proxy-port
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /root/src/config
+              name: vol-rust-grpc-config
+              readOnly: true
+          workingDir: /root
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: rust-grpc-proxy-config.toml
+            optional: true
+          name: vol-rust-grpc-config
