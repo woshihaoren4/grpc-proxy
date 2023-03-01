@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-server
+  namespace: qa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-server
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: echo-server
+        rustGrpcProxyEnable: "1234"
+    spec:
+      affinity: {}
+      containers:
+        - args:
+            - server
+            - '-n'
+            - test-server
+            - '-a'
+            - ':1234'
+          command:
+            - ./server
+          image: registry.cn-hangzhou.aliyuncs.com/wshr/wd:latest
+          imagePullPolicy: Always
+          name: container-0
+          resources: {}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+

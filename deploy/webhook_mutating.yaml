@@ -15,7 +15,7 @@ webhooks:
         path: "/sidecar/rust-grpc-proxy"
       caBundle: ${CA_BUNDLE}
     rules:
-      - operations: [ "CREATE,UPDATE" ]
+      - operations: [ "CREATE","UPDATE" ]
         apiGroups: [""]
         apiVersions: ["v1"]
         resources: ["pods"]
