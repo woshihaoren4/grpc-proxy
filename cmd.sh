@@ -2,7 +2,7 @@
 
 case $1 in
 run)
-cargo run -- run
+RUST_GRPC_PROXY_ADDR="127.0.0.1:1234" cargo run -- run
   ;;
 show)
 cargo run -- show
@@ -26,9 +26,9 @@ EOF
 
 cargo build --release --target=x86_64-unknown-linux-musl
 chmod +x target/x86_64-unknown-linux-musl/release/rust-grpc-proxy
-tag="wdshihaoren/rust-grpc-proxy:v0.0.2-t"
+tag="wdshihaoren/rust-grpc-proxy:v0.0.4-s"
 docker build -f ./Dockerfile -t "$tag"  .
-docker pull "$tag"
+docker push "$tag"
 rm -rf .cargo
   ;;
 *)

@@ -39,8 +39,8 @@ pub async fn start(sd: ShutDown, cfg: Config) {
         Arc::new(QueryAnalysisDefaultImpl),
         Arc::new(MetadataAnalysisDefaultImpl::from(&cfg.metadata_filters)),
     );
-    init_proxy_sink(map, cfg.proxy_sink).await;
-
+    init_proxy_sink(map.clone(), cfg.proxy_sink).await;
+    init_env_sink(map, cfg.env_sink, cfg.server.name).await;
     //todo 开启新的服务动态监听grpc sink变化 gateway 模式
 
     let _ = HyperHttpServerBuilder::new()

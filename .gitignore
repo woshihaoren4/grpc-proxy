@@ -12,3 +12,5 @@ Cargo.lock
 ./mg.sh
 
 ./.idea
+
+./webhook/.idea
