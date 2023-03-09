@@ -34,7 +34,7 @@ impl RunApplication {
         let cfg = match Config::from_file_by_path(&path) {
             Ok(o) => o,
             Err(e) => {
-                wd_log::log_info_ln!("from file:[{}] load config error={}", path,e);
+                wd_log::log_info_ln!("from file:[{}] load config error={}", path, e);
                 Config::default()
             }
         };
