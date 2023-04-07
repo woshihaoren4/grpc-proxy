@@ -8,7 +8,7 @@
 - [x] http to grpc
 - [x] grpc annotations restful
 - [x] custom metadata
-- [ ] sidecar scheme
+- [x] sidecar scheme
 - [ ] dynamic reflect
 - [ ] development(for event)
 
@@ -18,6 +18,10 @@ cd example/restful
 
 ./example.sh
 ```
+
+## docs
+https://blog.csdn.net/qq_25490573/category_12237327.html
+
 
 ## docker
 
