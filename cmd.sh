@@ -2,6 +2,9 @@
 
 case $1 in
 run)
+cargo run -- run
+  ;;
+run_env)
 RUST_GRPC_PROXY_ADDR="127.0.0.1:1234" cargo run -- run
   ;;
 show)

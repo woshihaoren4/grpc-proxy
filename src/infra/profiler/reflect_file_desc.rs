@@ -62,8 +62,9 @@ impl FileDescProfiler {
             i.filter(&mut services);
         }
         wd_log::log_debug_ln!("[{}] reflect success --> {:?}", &server, services);
-        let map = FileDescProfiler::get_file_desc_by_services(&mut client, services).await?;
-        let services = self.services_desc_assemble.assemble(map)?;
+        let mut map = FileDescProfiler::get_file_desc_by_services(&mut client, services).await?;
+        let deps = FileDescProfiler::add_dependency_to_services(&mut client,&mut map).await?;
+        let services = self.services_desc_assemble.assemble(map,deps)?;
         Ok(services)
     }
     #[allow(dead_code)]
@@ -116,6 +117,65 @@ impl FileDescProfiler {
         }
         return Ok(list);
     }
+    async fn add_dependency_to_services(client: &mut ServerReflectionClient<Channel>,map:&mut HashMap<String, Vec<FileDescriptorProto>>) -> anyhow::Result<Vec<Vec<FileDescriptorProto>>>{
+        let mut list = vec![];
+        let mut services = vec![];
+        for (_,v) in map.iter(){
+            for i in v.iter(){
+                services.push(i);
+            }
+        }
+        let mut deps = vec![];
+        for i in services.into_iter(){
+            for i in i.dependency.clone().into_iter(){
+                if !deps.iter().any(|x:&String|x == i.as_str() ) {
+                    deps.push(i);
+                }
+            }
+        }
+        if deps.is_empty() {
+            return Ok(list)
+        }
+        loop {
+            let resp = Self::reflect_dependency_by_file(client,deps).await?;
+            if resp.is_empty() {
+                break
+            }
+            deps = vec![];
+            for i in resp.iter(){
+                for j in i.dependency.iter(){
+                    deps.push(j.clone());
+                }
+            }
+            list.push(resp);
+        }
+
+        Ok(list)
+    }
+    async fn reflect_dependency_by_file(client: &mut ServerReflectionClient<Channel>,deps:Vec<String>) -> anyhow::Result<Vec<FileDescriptorProto>>{
+        let mut list = vec![];
+        if deps.is_empty() {
+            return Ok(list)
+        }
+
+        let stream = deps
+            .iter()
+            .map(|x| ServerReflectionRequest {
+                host: String::default(),
+                message_request: Some(MessageRequest::FileByFilename(x.to_string())),
+            })
+            .collect::<Vec<ServerReflectionRequest>>();
+        let resp = Self::reflect_request(client,stream).await?;
+
+
+        for i in resp.into_iter(){
+            for i in i.into_iter(){
+                list.push(i);
+            }
+        }
+
+        Ok(list)
+    }
     async fn get_file_desc_by_services(
         client: &mut ServerReflectionClient<Channel>,
         services: Vec<String>,
@@ -128,18 +188,65 @@ impl FileDescProfiler {
                 message_request: Some(MessageRequest::FileContainingSymbol(x.to_string())),
             })
             .collect::<Vec<ServerReflectionRequest>>();
+        let resp = Self::reflect_request(client,stream).await?;
+
+        for (_,list) in resp.into_iter().enumerate(){
+            for i in list.iter(){
+                for j in i.service.iter(){
+                    let name = format!("{}.{}",i.package(),j.name());
+                    if services.contains(&name) {
+                        map.insert(name,list.clone());
+                    }
+                }
+            }
+        }
+
+        // let req_stream = tokio_stream::iter(stream);
+        // let mut resp = client
+        //     .server_reflection_info(req_stream)
+        //     .await?
+        //     .into_inner();
+        // let mut i = 0;
+        // while let Some(s) = resp.next().await {
+        //     let resp = match s {
+        //         Ok(o) => o,
+        //         Err(e) => {
+        //             return Err(anyhow::anyhow!(
+        //                 "get_file_desc_by_services error,status:{},message:{}",
+        //                 e.code(),
+        //                 e.message()
+        //             ));
+        //         }
+        //     };
+        //     let file_desc_resp = resp.message_response.unwrap();
+        //     match file_desc_resp {
+        //         MessageResponse::FileDescriptorResponse(s) => {
+        //             let mut list = vec![];
+        //             for buf in s.file_descriptor_proto.into_iter() {
+        //                 let fdp = FileDescriptorProto::parse_from_bytes(buf.as_slice())?;
+        //                 list.push(fdp);
+        //             }
+        //             map.insert(services[i].clone(), list);
+        //         }
+        //         _ => {}
+        //     }
+        //     i += 1;
+        // }
+        Ok(map)
+    }
+    async fn reflect_request(client: &mut ServerReflectionClient<Channel>, stream:Vec<ServerReflectionRequest>) -> anyhow::Result<Vec<Vec<FileDescriptorProto>>> {
+        let mut item = vec![];
         let req_stream = tokio_stream::iter(stream);
         let mut resp = client
             .server_reflection_info(req_stream)
             .await?
             .into_inner();
-        let mut i = 0;
         while let Some(s) = resp.next().await {
             let resp = match s {
                 Ok(o) => o,
                 Err(e) => {
                     return Err(anyhow::anyhow!(
-                        "get_file_desc_by_services error,status:{},message:{}",
+                        "reflect_request error,status:{},message:{}",
                         e.code(),
                         e.message()
                     ));
@@ -153,12 +260,11 @@ impl FileDescProfiler {
                         let fdp = FileDescriptorProto::parse_from_bytes(buf.as_slice())?;
                         list.push(fdp);
                     }
-                    map.insert(services[i].clone(), list);
+                    item.push(list)
                 }
                 _ => {}
             }
-            i += 1;
         }
-        Ok(map)
+        Ok(item)
     }
 }

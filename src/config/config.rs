@@ -60,7 +60,7 @@ field_generate!(MetadataFilter;
 );
 
 field_generate!(EnvSink;
-    disable,bool,false,"EnvSink::disable";
+    disable,bool,true,"EnvSink::disable";
     addr_env_key,String,String::from("RUST_GRPC_PROXY_ADDR"),"EnvSink::addr_env_key";
     wait_time_max_sec,u64,300,"EnvSink::wait_time_max_sec";
     interval_sec,u64,10,"EnvSink::interval_sec";

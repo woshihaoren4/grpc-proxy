@@ -120,6 +120,7 @@ impl Node {
         }
         let grpc_path = format!("{}/{}", service_name, method_name);
         let desc = Arc::new(desc);
+        wd_log::log_debug_ln!("[grpc] {} --->  http: [{}] {}",grpc_path,method,http_path);
         Some(Self {
             method,
             http_path,

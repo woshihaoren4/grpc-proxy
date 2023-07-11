@@ -12,16 +12,21 @@ pub async fn init_proxy_sink(dm: Arc<dyn DynMap>, ps: Vec<ProxySink>) {
 }
 
 pub async fn init_env_sink(dm: Arc<dyn DynMap>, es: EnvSink, name: String) {
-    if es.disable {
+    if !es.disable {
         return;
     }
     let mut i = es.interval_sec;
     let addr = match std::env::var(es.addr_env_key.as_str()) {
         Ok(o) => o,
-        Err(_) => {
+        Err(err) => {
+            wd_log::log_error_ln!("load env[{}] error:{}",es.addr_env_key,err);
             return;
         }
     };
+    if addr.is_empty(){
+        wd_log::log_error_ln!("load env[{}] is nil",es.addr_env_key);
+        return;
+    }
     wd_log::log_debug_ln!("load env addr: {} start init dyn client", addr);
     while i < es.wait_time_max_sec {
         tokio::time::sleep(std::time::Duration::from_secs(es.interval_sec)).await;

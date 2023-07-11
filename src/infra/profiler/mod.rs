@@ -18,6 +18,7 @@ pub trait ServiceDescriptorAssembler {
     fn assemble(
         &self,
         input: HashMap<String, Vec<FileDescriptorProto>>,
+        deps : Vec<Vec<FileDescriptorProto>>,
     ) -> anyhow::Result<HashMap<String, ServiceDescriptor>>;
 }
 
