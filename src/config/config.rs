@@ -38,7 +38,7 @@ field_generate!(Server;
 field_generate!(Log;
     level,String,String::from("debug"),"Log::level";
     show_time,bool,true,"Log::show_time";
-    show_file_line,bool,true,"Log::show_file_line";
+    show_file_line,bool,false,"Log::show_file_line";
     out_file_path,String,String::new(),"Log::out_file_path"
 );
 
