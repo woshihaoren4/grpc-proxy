@@ -4,10 +4,14 @@ use hyper::header::HeaderValue;
 use hyper::HeaderMap;
 use std::collections::HashMap;
 
+const HTTP_CONTENT_TYPE:&'static str = "http-content-type";
+const CONTENT_TYPE:&'static str = "content-type";
+
 pub struct MetadataAnalysisDefaultImpl {
     prefix: Vec<String>,
     has: HashMap<String, bool>,
     show_response_server: bool,
+    response_default_content_type : String,
 }
 
 impl From<&MetadataFilter> for MetadataAnalysisDefaultImpl {
@@ -17,12 +21,15 @@ impl From<&MetadataFilter> for MetadataAnalysisDefaultImpl {
         while let Some(key) = iter.next() {
             has.insert(key.clone(), true);
         }
+        has.insert(HTTP_CONTENT_TYPE.to_string(),true);
         let prefix = mf.prefix.clone();
         let show_response_server = mf.response_show_server;
+        let response_default_content_type = mf.response_default_content_type.clone();
         Self {
             prefix,
             has,
             show_response_server,
+            response_default_content_type,
         }
     }
 }
@@ -70,6 +77,11 @@ impl MetadataAnalysis for MetadataAnalysisDefaultImpl {
         }
         if self.show_response_server {
             mp.insert("proxy_server".into(), "rust-grpc-proxy".into());
+        }
+        if let Some(ty) = mp.remove(HTTP_CONTENT_TYPE) {
+            mp.insert(CONTENT_TYPE.to_string(),ty);
+        }else{
+            mp.insert(CONTENT_TYPE.to_string(),self.response_default_content_type.clone());
         }
         return mp;
     }

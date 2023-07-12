@@ -56,7 +56,8 @@ field_generate!(ProxySink;
 field_generate!(MetadataFilter;
     prefix,Vec<String>,vec![String::from("md-")],"MetadataFilter::prefix";
     r#match,Vec<String>,vec![],"MetadataFilter::r#match";
-    response_show_server,bool,true,"MetadataFilter::response_show_server"
+    response_show_server,bool,true,"MetadataFilter::response_show_server";
+    response_default_content_type,String,"application/json".into(),"MetadataFilter::response_default_content_type" //如果grpc response中未指明 `http-content-type`,则使用此字段作为返回内容类型
 );
 
 field_generate!(EnvSink;
