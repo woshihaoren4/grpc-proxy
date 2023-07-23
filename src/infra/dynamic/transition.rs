@@ -2,6 +2,7 @@ use crate::infra::dynamic::JsonProtoTransition;
 use protobuf::descriptor::field_descriptor_proto::Type;
 use protobuf::reflect::{MessageDescriptor, ReflectValueBox};
 use std::collections::HashMap;
+use protobuf_json_mapping::PrintOptions;
 
 pub struct JsonProtoTransitionDefaultImpl;
 
@@ -63,7 +64,7 @@ impl JsonProtoTransition for JsonProtoTransitionDefaultImpl {
             return Err(anyhow::anyhow!("proto_to_json: data len < 5"));
         }
         let msg = pt.parse_from_bytes(&data[5..])?;
-        let s = protobuf_json_mapping::print_to_string(&*msg)?;
+        let s = protobuf_json_mapping::print_to_string_with_options(&*msg,&PrintOptions{proto_field_name:true,..Default::default()})?;
         Ok(s.into_bytes())
     }
 }

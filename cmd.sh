@@ -29,9 +29,12 @@ EOF
 
 cargo build --release --target=x86_64-unknown-linux-musl
 chmod +x target/x86_64-unknown-linux-musl/release/rust-grpc-proxy
-tag="wdshihaoren/rust-grpc-proxy:v0.0.4-s"
+tag="wdshihaoren/rust-grpc-proxy:v0.0.6-s"
 docker build -f ./Dockerfile -t "$tag"  .
 docker push "$tag"
+atlast="wdshihaoren/rust-grpc-proxy:atlast"
+docker tag $tag $atlast
+docker push "$atlast"
 rm -rf .cargo
   ;;
 *)
